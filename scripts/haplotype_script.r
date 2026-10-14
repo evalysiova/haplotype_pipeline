@@ -700,3 +700,42 @@ sp_map <- c(ACB="AFR", ASW="AFR", ESN="AFR", GWD="AFR", LWK="AFR", MSL="AFR", YR
 ann <- data.frame(superpop = unname(sp_map[colnames(freq)]), row.names = colnames(freq))
 
 pheatmap(freq, cluster_rows = hc, cluster_cols = TRUE, annotation_col = ann, annotation_names_col = FALSE, show_rownames = FALSE, border_color = NA)
+
+# Co-occurence of variants (pairs)
+snps <- c("rs7782412", "rs7799652")
+
+vcf <- read.vcfR(file.path("data", "raw", "contr_phased.vcf.gz"))
+gt  <- extract.gt(vcf, element = "GT")[snps, ]
+
+h1 <- sub("\\|.*", "", gt)
+h2 <- sub(".*\\|", "", gt)
+
+pop_vec <- pop(gen)[match(colnames(gt), indNames(gen))]
+
+hap_freq <- data.frame(
+  pop       = rep(pop_vec, 2),
+  haplotype = c(paste0(h1[snps[1], ], h1[snps[2], ]),
+                paste0(h2[snps[1], ], h2[snps[2], ]))
+) |>
+  dplyr::count(pop, haplotype) |> group_by(pop) |> mutate(frq = n / sum(n)) |>
+  ungroup()
+
+pop_order <- names(sp_map)
+hap_freq$pop <- factor(hap_freq$pop, levels = pop_order)
+
+ggplot(hap_freq, aes(x = pop, y = frq, fill = haplotype)) +
+  geom_col() +
+  labs(x = NULL, y = "Frequency", fill = "Haplotype") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))     
+
+# Tree
+library(ape)
+
+genind_var <- vcfR2genind(vcf)
+pop(genind_var) <- pop_clean[, 3]
+genpop_var <- genind2genpop(genind_var)
+
+distance <- dist.genpop(genpop_var, method = 1)
+
+plot(hclust(distance), type = "unrooted")
