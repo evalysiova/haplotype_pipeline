@@ -705,12 +705,14 @@ pheatmap(freq, cluster_rows = hc, cluster_cols = TRUE, annotation_col = ann, ann
 snps <- c("rs7782412", "rs7799652")
 
 vcf <- read.vcfR(file.path("data", "raw", "contr_phased.vcf.gz"))
+genind_var <- vcfR2genind(vcf)
+pop(genind_var) <- pop_clean[, 3]
 gt  <- extract.gt(vcf, element = "GT")[snps, ]
 
 h1 <- sub("\\|.*", "", gt)
 h2 <- sub(".*\\|", "", gt)
 
-pop_vec <- pop(gen)[match(colnames(gt), indNames(gen))]
+pop_vec <- pop(genind_var)[match(colnames(gt), indNames(genind_var))]
 
 hap_freq <- data.frame(
   pop       = rep(pop_vec, 2),
@@ -732,8 +734,6 @@ ggplot(hap_freq, aes(x = pop, y = frq, fill = haplotype)) +
 # Tree
 library(ape)
 
-genind_var <- vcfR2genind(vcf)
-pop(genind_var) <- pop_clean[, 3]
 genpop_var <- genind2genpop(genind_var)
 
 distance <- dist.genpop(genpop_var, method = 1)
