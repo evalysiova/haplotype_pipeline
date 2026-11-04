@@ -717,16 +717,18 @@ pop_vec <- pop(genind_var)[match(colnames(gt), indNames(genind_var))]
 hap_freq <- data.frame(
   pop       = rep(pop_vec, 2),
   haplotype = c(paste0(h1[snps[1], ], h1[snps[2], ]),
-                paste0(h2[snps[1], ], h2[snps[2], ]))
-) |>
+                paste0(h2[snps[1], ], h2[snps[2], ]))) |>
   dplyr::count(pop, haplotype) |> group_by(pop) |> mutate(frq = n / sum(n)) |>
-  ungroup()
+  ungroup() |> 
+  mutate(hap_recode = dplyr::recode(haplotype, "00" = "TG", "01" = "TT", "10" = "CG", "11" = "CT"))
 
 pop_order <- names(sp_map)
 hap_freq$pop <- factor(hap_freq$pop, levels = pop_order)
+hap_freq$hap_recode <- factor(hap_freq$hap_recode, levels = c("TG", "TT", "CG", "CT"))
 
-ggplot(hap_freq, aes(x = pop, y = frq, fill = haplotype)) +
+ggplot(hap_freq, aes(x = pop, y = frq, fill = hap_recode)) +
   geom_col() +
+  scale_fill_manual(values = c("TG" = "#6f34e4ff", "TT" = "#d86ec0ff", "CG" = "#721722fa", "CT" = "#b7ccecff")) +
   labs(x = NULL, y = "Frequency", fill = "Haplotype") +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))     
