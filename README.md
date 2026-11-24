@@ -24,6 +24,7 @@ The pipeline examines three distinct loci, one mapped to FOXP2 and two to CNTNAP
 | `contrib_ids.txt` | One variant ID per line: the variants that were previously identified as contributing to population differentiation. |
 | `pop.csv` | Comma-separated, no header. Column 2 is the sample ID and column 3 is the population code (for example `YRI`, `CEU`). Column 1 is not used. |
 
+Note: In the uploaded workflow files are downloaded by releases corresponding to repository "FOXP2_CNTNAP2_Population_Analysis" (https://github.com/evalysiova/FOXP2_CNTNAP2_Population_Analysis/).
 
  ### Loci tested
 
